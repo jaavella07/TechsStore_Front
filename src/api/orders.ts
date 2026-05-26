@@ -14,7 +14,13 @@ export const ordersApi = {
   getOrder: (id: string) =>
     apiClient.get<Order>(`/orders/${id}`).then((r) => r.data),
 
-  // Admin: all orders with filters; Customer: own orders
+  // Customer: own orders via /orders/me
+  getMyOrders: (params?: { page?: number; limit?: number }) =>
+    apiClient
+      .get<PaginatedResult<Order>>('/orders/me', { params })
+      .then((r) => r.data),
+
+  // Admin: all orders with filters
   getOrders: (filters?: OrderFilters) =>
     apiClient
       .get<PaginatedResult<Order>>('/orders', { params: filters })

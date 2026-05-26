@@ -100,7 +100,12 @@ export function CartDrawer() {
               <div className="p-4 border-t border-border space-y-3 shrink-0">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-text-muted">Subtotal</span>
-                  <PriceDisplay finalPriceInCents={cart.totalInCents} />
+                  <PriceDisplay
+                    finalPriceInCents={cart.items.reduce(
+                      (sum, i) => sum + i.priceSnapshotInCents * i.quantity,
+                      0,
+                    )}
+                  />
                 </div>
                 <Link to={ROUTES.cart} onClick={closeDrawer}>
                   <Button className="w-full">Proceed to Checkout</Button>

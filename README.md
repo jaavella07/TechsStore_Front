@@ -6,17 +6,13 @@
 
 ## Por qué construí esto
 
-Llevo varios meses construyendo el backend de TechsStore como proyecto de aprendizaje serio. Quería ir más allá de los tutoriales y enfrentarme a los problemas reales que aparecen cuando una aplicación crece: autenticación con refresh tokens, reserva de inventario concurrente, colas de trabajo asíncronas, pagos con webhooks. Ese backend quedó sólido, pero vivía en el vacío — no tenía nada con qué probarlo de verdad ni nada que mostrarle a alguien que no supiera leer Swagger.
-
-El detonante concreto fue una conversación familiar. Mi familia tiene un negocio llamado **El Mirador** y estaban evaluando pasarse al canal online. Pensé puedo construir el aplicativo y tener algo real, no solo un proyecto de GitHub que nadie usa. 
-
-Al mismo tiempo, ya había construido un **agente de IA conversacional** con LangGraph (proyecto `agent-ecommerce`) que podía responder preguntas sobre productos, recomendar equipos y consultar el estado de órdenes. Tenía sentido cerrar el loop: backend robusto + agente inteligente + interfaz de usuario que conectara ambos.
+Con el backend de TechsStore quería ir más allá de los tutoriales y enfrentarme a los problemas reales que aparecen cuando una aplicación crece: autenticación con refresh tokens, reserva de inventario concurrente, colas de trabajo asíncronas, pagos con webhooks. Ese backend vivía en el vacío no tenía nada con qué probarlo de verdad ni nada que mostrarle a alguien que no supiera leer Swagger y pensé puedo construir el aplicativo y tener algo real, no solo un proyecto de GitHub que nadie use. 
 
 ---
 
 ## El caso de uso
 
-TechsStore es una tienda de tecnología (laptops, periféricos, componentes, accesorios) orientada a profesionales y entusiastas. El flujo completo es el siguiente:
+TechsStore es una tienda de tecnología (laptops, periféricos, componentes, accesorios), el flujo completo es el siguiente:
 
 ```
 Cliente visita la tienda
@@ -25,12 +21,12 @@ Cliente visita la tienda
   → agrega al carrito (el backend reserva el stock en ese momento)
   → completa su dirección de envío
   → paga via Stripe Checkout
-  → recibe confirmación por email / WhatsApp
-  → puede consultar el estado de su orden en cualquier momento
+  → recibe confirmación por email 
+  → puede consultar el estado de su orden en cualquier momento (Agente IA)
 
 Si tiene dudas:
   → abre el chat de IA
-  → pregunta "¿qué laptop me recomiendas para programar con menos de $800?"
+  → pregunta "¿qué laptop me recomiendas para programar?"
   → el agente consulta la API, compara productos y responde en lenguaje natural
 ```
 
@@ -44,19 +40,19 @@ El administrador tiene su propio panel para gestionar productos, ajustar inventa
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Cliente / Navegador                      │
 │                   techsStore-frontend (:5173)                   │
-│                                                                  │
+│                                                                 │
 │  ┌─────────────────┐   REST API    ┌──────────────────────────┐ │
-│  │  React 19 SPA   │ ────────────▶ │  NestJS API (:3000)      │ │
-│  │  React Router 7 │               │  PostgreSQL + Redis       │ │
+│  │  React 19 SPA   │ ───────────▶  │ NestJS API (:3000)      
+│  │  React Router 7 │               │  PostgreSQL + Redis      │ │
 │  │  Zustand        │               │  BullMQ + Stripe         │ │
-│  │  TanStack Query │               │  JWT Auth                 │ │
+│  │  TanStack Query │               │  JWT Auth                | │
 │  └────────┬────────┘               └──────────────────────────┘ │
 │           │                                     │               │
 │           │  POST /chat               TCP :4000 │               │
 │           ▼                                     ▼               │
 │  ┌─────────────────┐               ┌──────────────────────────┐ │
 │  │ Agent HTTP      │               │ Notifications Service    │ │
-│  │ Server (:3500)  │               │ Email + WhatsApp         │ │
+│  │ Server (:3500)  │               │ Email                    | |  
 │  │                 │               └──────────────────────────┘ │
 │  │ LangGraph       │                                            │
 │  │ GPT-4o-mini     │                                            │
@@ -81,24 +77,6 @@ El administrador tiene su propio panel para gestionar productos, ajustar inventa
 | **Framer Motion v11** | 11.x | Animaciones: stagger en product grids, transiciones de página, slide-in del carrito y del chat. Elegí Framer Motion porque trabaja directamente sobre el DOM sin conflictos con Tailwind. |
 | **Lucide React** | — | Iconografía consistente y tree-shakeable. |
 | **TypeScript** | 5.x | Todo el proyecto. Sin excepciones. |
-
----
-
-## Diseño visual: "Industrial Tech"
-
-La identidad visual fue una decisión consciente desde el principio. Quería evitar el look genérico de "startup con gradiente púrpura en fondo blanco" que producen la mayoría de los templates de IA.
-
-Tomé como dirección **"Industrial Tech"**:
-
-- **Fondo**: `#080A0F` — negro azulado profundo, no negro puro
-- **Superficie de cards**: `#111318` con borde `#1E2128`
-- **Acento primario**: `#00C8FF` — cyan eléctrico, tecnológico
-- **Acento de error/alerta**: `#FF4D6D` — rojo coral, diferenciado del rojo estándar
-- **Verde de confirmación**: `#22D3A0` — más fresco que el verde Bootstrap
-- **Tipografía de headings**: `Space Grotesk` — geométrica, técnica, sin ser robótica
-- **Tipografía de cuerpo**: `DM Sans` — limpia y moderna; evité Inter y Roboto deliberadamente
-
-El resultado es una interfaz que parece construida para un producto real, no para un ejercicio académico.
 
 ---
 
@@ -192,7 +170,7 @@ Cuando un token expira, el interceptor de respuesta detecta el 401, pausa todos 
 
 ### Reserva de inventario
 
-El backend usa un sistema de tres fases: al agregar al carrito se reserva stock, al expirar el carrito se libera, y al confirmar el pago Stripe se descuenta definitivamente. El frontend respeta este flujo — el carrito tiene TTL de 30 minutos y el `CartDrawer` refleja cantidades en tiempo real.
+El backend usa un sistema de tres fases: al agregar al carrito se reserva stock, al expirar el carrito se libera, y al confirmar el pago Stripe se descuenta definitivamente. El frontend respeta este flujo el carrito tiene TTL de 30 minutos y el `CartDrawer` refleja cantidades en tiempo real.
 
 ### Flujo de pago
 
@@ -208,8 +186,6 @@ CartPage → [usuario llena dirección de envío]
 ### Chat con IA
 
 El widget flotante en la esquina inferior izquierda se conecta al servidor Express del agente (`agent-ecommerce`) que envuelve el grafo LangGraph. El agente clasifica la intención del mensaje (pregunta, recomendación, estado de orden, tracking) y responde en lenguaje natural usando GPT-4o-mini.
-
-Si el servidor del agente no está corriendo, el widget muestra un mensaje descriptivo indicando cómo levantarlo — no falla silenciosamente.
 
 ---
 
@@ -275,8 +251,8 @@ npm run dev:server
 ### Visitante (sin cuenta)
 
 - Navegar el catálogo completo con filtros por categoría, marca y precio
-- Buscar productos con debounce
-- Ver detalle completo de cada producto con galería de imágenes y especificaciones
+- Buscar productos
+- Ver detalle completo de cada producto con galería de imágenes (por implementar) y especificaciones
 - Usar el chat de IA para preguntas y recomendaciones
 
 ### Cliente (cuenta registrada)
@@ -293,7 +269,7 @@ Todo lo anterior, más:
 
 Todo lo anterior, más panel exclusivo:
 
-- **Dashboard**: métricas de productos, órdenes y usuarios; órdenes recientes
+- **Dashboard**: productos, órdenes y usuarios; órdenes recientes
 - **Productos**: crear, editar, desactivar; ajustar inventario manualmente
 - **Órdenes**: filtrar por estado o número; avanzar el flujo (PENDING → PAID → PROCESSING → SHIPPED → DELIVERED)
 - **Usuarios**: cambiar roles entre CLIENT/ADMIN; desactivar cuentas
@@ -304,24 +280,13 @@ Todo lo anterior, más panel exclusivo:
 
 **URL como fuente de verdad en filtros.** En `ProductsPage` usé `useSearchParams` de React Router en vez de estado local. Esto hace que cualquier combinación de filtros sea una URL compartible y que el botón "atrás" del navegador funcione correctamente. Fue más trabajo inicial pero el resultado es mucho más robusto.
 
-**Optimistic updates en el carrito.** Cuando el usuario elimina un ítem, el carrito se actualiza inmediatamente en la UI antes de que llegue la respuesta del servidor. Si falla, se revierte. La percepción de velocidad mejora notablemente.
+**updates en el carrito.** Cuando el usuario elimina un ítem, el carrito se actualiza inmediatamente en la UI antes de que llegue la respuesta del servidor. Si falla, se revierte. La percepción de velocidad mejora notablemente.
 
-**Cola de refresh con failedQueue.** El interceptor de Axios no solo reintenta el request que causó el 401 — gestiona una cola de todos los requests que llegaron mientras el refresh estaba en curso. Esto evita múltiples llamadas simultáneas a `POST /auth/refresh` y garantiza que todos se completen con el nuevo token.
+**Cola de refresh con failedQueue.** El interceptor de Axios no solo reintenta el request que causó el 401 gestiona una cola de todos los requests que llegaron mientras el refresh estaba en curso. Esto evita múltiples llamadas simultáneas a `POST /auth/refresh` y garantiza que todos se completen con el nuevo token.
 
 **Zustand sin Provider.** No necesité envolver la app en un `<StoreProvider>`. Zustand funciona como un singleton de módulo, lo que simplifica considerablemente el árbol de componentes y hace trivial acceder al store desde fuera de React (el cliente Axios lo hace).
 
 **El agente como servicio separado.** Mantuve el agente LangGraph como un proceso independiente accesible via HTTP en vez de integrarlo directamente en el frontend o el backend. Esto me permite iterar sobre los prompts y la lógica del agente sin tocar el resto del sistema.
-
----
-
-## Próximos pasos
-
-- [ ] Imágenes reales de productos (el backend soporta URLs externas; falta integrar Cloudinary o S3)
-- [ ] Búsqueda full-text con PostgreSQL `tsvector` o integración con Algolia
-- [ ] Panel de analytics para el administrador (gráficos de ventas por período)
-- [ ] Lazy loading de rutas con `React.lazy` (actualmente todo en un único chunk)
-- [ ] PWA con notificaciones push para actualizaciones de estado de órdenes
-- [ ] Despliegue: backend en Railway, frontend en Vercel, agente como worker en Fly.io
 
 ---
 
@@ -345,4 +310,4 @@ Dev/
 
 ---
 
-*Construido como proyecto de aprendizaje real — con la intención de desplegarlo.*
+*Construido como proyecto de aprendizaje real con la intención de desplegarlo.*

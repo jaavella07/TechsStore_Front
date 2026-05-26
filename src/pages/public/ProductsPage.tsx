@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { SlidersHorizontal, Package, Search } from 'lucide-react'
 import { useProducts } from '@/hooks/useProducts'
@@ -34,12 +34,17 @@ export function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const [searchInput, setSearchInput] = useState(searchParams.get('search') ?? '')
+  const isFirstRender = useRef(true)
 
   const filters = paramsToFilters(searchParams)
-  const { data, isLoading, isError } = useProducts(filters)
+  const { data, isLoading, isFetching, isError } = useProducts(filters)
 
-  // Debounce search
+  // Debounce search — skip the initial mount so page params are not cleared
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
     const id = setTimeout(() => {
       setSearchParams((prev) => {
         const next = new URLSearchParams(prev)
@@ -93,9 +98,10 @@ export function ProductsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="font-display text-3xl font-bold text-text">Productos</h1>
-          {!isLoading && data && (
-            <p className="text-text-dim text-sm mt-1">
+          {data && (
+            <p className="text-text-dim text-sm mt-1 flex items-center gap-2">
               {data.total} {data.total === 1 ? 'resultado' : 'resultados'} encontrados
+              {isFetching && <span className="size-3 rounded-full border-2 border-cyan border-t-transparent animate-spin inline-block" />}
             </p>
           )}
         </div>
@@ -141,7 +147,7 @@ export function ProductsPage() {
 
         {/* Grid */}
         <div className="flex-1 min-w-0">
-          {isLoading && <ProductGridSkeleton count={LIMIT} />}
+          {isLoading && !data && <ProductGridSkeleton count={LIMIT} />}
 
           {isError && (
             <div className="py-20 text-center border border-dashed border-border rounded-xl">

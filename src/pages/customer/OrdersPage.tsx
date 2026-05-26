@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Package, ArrowRight } from 'lucide-react'
-import { useOrders } from '@/hooks/useOrders'
+import { useMyOrders } from '@/hooks/useOrders'
 import { OrderStatusBadge } from '@/components/shared/OrderStatusBadge'
 import { Spinner } from '@/components/ui/Spinner'
 import { Button } from '@/components/ui/Button'
@@ -8,7 +8,7 @@ import { ROUTES } from '@/lib/constants'
 import { formatCents, formatDate } from '@/lib/utils'
 
 export function OrdersPage() {
-  const { data, isLoading, isError } = useOrders({ limit: 20, page: 1 })
+  const { data, isLoading, isError } = useMyOrders({ limit: 20, page: 1 })
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">

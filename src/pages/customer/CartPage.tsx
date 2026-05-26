@@ -40,6 +40,10 @@ export function CartPage() {
 
   const items = cart?.items ?? []
   const isEmpty = !isLoading && items.length === 0
+  const subtotalInCents = items.reduce(
+    (sum, item) => sum + item.priceSnapshotInCents * item.quantity,
+    0,
+  )
 
   async function handleCheckout(shippingAddress: ShippingForm) {
     setCheckoutLoading(true)
@@ -186,7 +190,7 @@ export function CartPage() {
               </div>
               <div className="border-t border-border pt-3 flex justify-between items-center">
                 <span className="text-text-muted text-sm">Subtotal</span>
-                <PriceDisplay finalPriceInCents={cart!.totalInCents} size="md" />
+                <PriceDisplay finalPriceInCents={subtotalInCents} size="md" />
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-text-dim">Shipping</span>

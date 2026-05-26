@@ -144,8 +144,8 @@ export interface CartItem {
 export interface Cart {
   id: string
   items: CartItem[]
-  totalInCents: number
-  isExpired: boolean
+  totalInCents?: number
+  isExpired?: boolean
   expiresAt: string
   createdAt: string
   updatedAt: string

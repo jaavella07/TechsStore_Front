@@ -106,4 +106,5 @@ export const useCartStore = create<CartState & CartActions>()((set, get) => ({
 export const selectCartItemCount = (s: CartState) =>
   s.cart?.items?.reduce((sum, i) => sum + i.quantity, 0) ?? 0
 
-export const selectCartTotal = (s: CartState) => s.cart?.totalInCents ?? 0
+export const selectCartTotal = (s: CartState) =>
+  s.cart?.items?.reduce((sum, i) => sum + i.priceSnapshotInCents * i.quantity, 0) ?? 0

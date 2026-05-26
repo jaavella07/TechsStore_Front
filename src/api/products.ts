@@ -11,10 +11,13 @@ import type {
 } from '@/types'
 
 export const productsApi = {
-  getProducts: (filters?: ProductFilters) =>
-    apiClient
-      .get<PaginatedResult<Product>>('/products', { params: filters })
-      .then((r) => r.data),
+  getProducts: (filters?: ProductFilters) => {
+    const { page = 1, limit = 12, ...rest } = filters ?? {}
+    const offset = (page - 1) * limit
+    return apiClient
+      .get<PaginatedResult<Product>>('/products', { params: { ...rest, limit, offset } })
+      .then((r) => r.data)
+  },
 
   getProduct: (id: string) =>
     apiClient.get<Product>(`/products/${id}`).then((r) => r.data),
