@@ -6,7 +6,6 @@ import {
   LogOut,
   Menu,
   Package,
-  Search,
   ShoppingCart,
   User,
   X,
@@ -20,7 +19,6 @@ import { cn } from '@/lib/utils'
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
   const navigate = useNavigate()
   const userMenuRef = useRef<HTMLDivElement>(null)
 
@@ -41,15 +39,6 @@ export function Header() {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
-
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault()
-    if (searchQuery.trim()) {
-      navigate(`${ROUTES.products}?search=${encodeURIComponent(searchQuery.trim())}`)
-      setSearchQuery('')
-      setIsMenuOpen(false)
-    }
-  }
 
   async function handleLogout() {
     await logout()
@@ -80,20 +69,6 @@ export function Header() {
             <NavLink to={ROUTES.home} end className={navLinkClass}>Home</NavLink>
             <NavLink to={ROUTES.products} className={navLinkClass}>Products</NavLink>
           </nav>
-
-          {/* Search bar */}
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-sm mx-auto">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-text-dim pointer-events-none" />
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search products…"
-                className="w-full bg-surface border border-border rounded pl-8 pr-3 py-1.5 text-sm text-text placeholder:text-text-dim outline-none focus:border-cyan transition-colors"
-              />
-            </div>
-          </form>
 
           <div className="flex items-center gap-2 ml-auto">
             {/* Cart */}
@@ -205,18 +180,6 @@ export function Header() {
         {/* Mobile menu */}
         {isMenuOpen && (
           <div className="md:hidden border-t border-border py-3 space-y-1">
-            <form onSubmit={handleSearch} className="px-1 mb-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-text-dim pointer-events-none" />
-                <input
-                  type="search"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search products…"
-                  className="w-full bg-surface border border-border rounded pl-8 pr-3 py-2 text-sm text-text placeholder:text-text-dim outline-none focus:border-cyan"
-                />
-              </div>
-            </form>
             <NavLink
               to={ROUTES.home}
               end
